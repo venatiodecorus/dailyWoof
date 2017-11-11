@@ -10,10 +10,10 @@ type CommonWord struct {
 }
 
 type FmtStory struct {
-	Title string `json:"title"`
+	Title       string `json:"title"`
 	Description string `json:"description"`
-	Story string `json:"story"`
-	Image string `json:"image"`
+	Story       string `json:"story"`
+	Image       string `json:"image"`
 }
 
 type Story struct {
@@ -26,22 +26,20 @@ type Story struct {
 	Names       []string     `json:"names"`
 }
 
-
 func main() {
 	r := gin.Default()
 	r.Static("/static", "./dist/static")
 	r.LoadHTMLFiles("dist/index.html")
+	client := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+		DB:       0,
+	})
 
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(200, "index.html", nil)
 	})
 	r.GET("/images", func(c *gin.Context) {
-		client := redis.NewClient(&redis.Options{
-			Addr:     "redis:6379",
-			Password: "",
-			DB:       0,
-		})
-
 		img, err := client.Keys("*").Result()
 		c.JSON(200, gin.H{
 			"message": img,
@@ -49,12 +47,6 @@ func main() {
 		})
 	})
 	r.GET("/stories", func(c *gin.Context) {
-		client := redis.NewClient(&redis.Options{
-			Addr:     "redis:6379",
-			Password: "", // no password set
-			DB:       0,  // use default DB
-		})
-
 		key, err := client.RandomKey().Result()
 
 		if err != nil {
@@ -79,7 +71,6 @@ func main() {
 
 		c.JSON(200, gin.H{
 			"data": []FmtStory{res2},
-
 		})
 	})
 	r.Run()
